@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use this software or the paper's results, please cite the paper and the software."
+title: "ResFlow-GNN"
+type: software
+authors:
+  - family-names: Amorim
+    given-names: Tiago C. A.
+    orcid: "https://orcid.org/0009-0006-4773-4513"
+  - family-names: Schiozer
+    given-names: Denis J.
+version: 0.1.0
+date-released: "2026-11-24"
+license: MIT
+abstract: >-
+  Code, trained weights and demo data of ResFlow-GNN, a graph neural network proxy
+  for multiphase (black-oil) reservoir flow simulation.
+keywords:
+  - graph neural network
+  - reservoir simulation
+  - proxy model
+  - waterflooding
+repository-code: "https://github.com/TiagoCAAmorim/ResFlow"
+# doi: TBD (software archive DOI)
+preferred-citation:
+  type: article
+  title: "ResFlow-GNN: A Graph Neural Network Proxy for Multiphase Reservoir Flow"
+  authors:
+    - family-names: Amorim
+      orcid: "https://orcid.org/0009-0006-4773-4513"
+      given-names: Tiago C. A.
+    - family-names: Schiozer
+      given-names: Denis J.
+  year: 2026
+  notes: "Manuscript to be submitted."
+  # doi: TBD
+references:
+  - type: dataset
+    title: "ResFlow-GNN: OPM Flow demo data"
+    authors:
+      - family-names: Amorim
+        given-names: Tiago C. A.
+        orcid: "https://orcid.org/0009-0006-4773-4513"
+      - family-names: Schiozer
+        given-names: Denis J.
+    year: 2026
+    doi: 10.5281/zenodo.24509172
+    repository: "https://zenodo.org/records/24509172"

@@ -1,0 +1,51 @@
+format_version: 1
+model: rate
+name: rate_2d_1d
+description: Rate model (well volumes from BHP, well index and state), 1-day steps.
+network:
+  hidden_dims: [16, 8]
+  enc_nodes_dims: [16, 16]
+  enc_edges_dims: [8, 8]
+  dec_nodes_dims: [16, 16]
+  kernel_dims: [16]
+  edge_mlp_dims: [8]
+  n_blocks: 2
+  conv_rank: 4
+  activation: gelu
+  decoder_concat_input: false
+  use_bn: true
+  add_inner_skip: true
+  dense_layers: true
+  init_type: xavier_uniform
+  init_scale: 0.001
+node_features: [P, So, Sw, Vo_std, Vg_std, Vw_std, Vo_res, Vw_res, Phi_o, Phi_g, Phi_w, PorVol_res, beta_o,
+  beta_w, beta_iw, G(f_o), G(f_g), G(f_w), G(f_g_inj), G(f_w_inj), G(f_o>0), G(f_g>0), G(f_w>0), G(f_g_inj>0),
+  G(f_w_inj>0), G(f_o<0), G(f_g<0), G(f_w<0), G(f_g_inj<0), G(f_w_inj<0), BHPp, BHPw, perm_i, perm_j,
+  log(perm_i), log(perm_j), WIp, WIw]
+edge_features: [fo, fw, fg_dissolved, fg_g_inj, fg_w_inj, fo>0, fw>0, fg_dissolved>0, fg_g_inj>0, fg_w_inj>0,
+  delta_phi_o, delta_phi_g, delta_phi_w, Transmissibility, log(Transmissibility), edge_dist_mod, log(edge_dist_mod)]
+normalization:
+  type: linear
+  grouped: false
+  feature_names: [Rs, P, So, Sg, Sw, Vo_std, Vg_std, Vw_std, Vo_res, Vg_free_res, Vw_res, Phi_o, Phi_g,
+    Phi_w, PorVol_ref, PorVol_res, beta_o, beta_g, beta_w, beta_ig, beta_iw, G(f_o), G(f_g), G(f_w), G(f_g_inj),
+    G(f_w_inj), G(f_o>0), G(f_g>0), G(f_w>0), G(f_g_inj>0), G(f_w_inj>0), G(f_o<0), G(f_g<0), G(f_w<0),
+    G(f_g_inj<0), G(f_w_inj<0), dNp, dGp, dWp, dGi, dWi, BHPp, BHPg, BHPw, z, por, perm_i, perm_j, perm_k,
+    log(perm_i), log(perm_j), log(perm_k), WIp, WIg, WIw, dRs, dP, dSo, dSg, dSw, dVo_std, dVg_std, dVw_std,
+    dVo_res, dVg_free_res, dVw_res, dPhi_o, dPhi_g, dPhi_w, fo, fg_free, fw, fg_dissolved, fg_g_inj, fg_w_inj,
+    fo>0, fg_free>0, fw>0, fg_dissolved>0, fg_g_inj>0, fg_w_inj>0, delta_phi_o, delta_phi_g, delta_phi_w,
+    Transmissibility, log(Transmissibility), edge_dist, log(edge_dist), edge_dist_mod, log(edge_dist_mod)]
+  state_keys: [data_norm.]
+well_type_embedding: {num_types: 4, dim: 4}
+outputs: [dNp, dGp, dWp, dWi]
+physics: {g: 0.0001, z_mean: null, pvt_krel: 'transform.pvt.*, transform.krel.* in weights.pt'}
+step_size: 1.0
+units: {pressure: kgf/cm2 (1 kgf/cm2 = 0.0980665 MPa), rs: sm3/sm3, saturation: fraction, volume: 'm3
+    at standard conditions, per cell (well volumes: per step)', pore_volume: m3, depth: m, time: days,
+  transmissibility_and_well_index: 'IMEX MODSI units, as read from the .sr3/.out files'}
+training: {data: 'SPE10 Tarbert 2D layers, training split, IMEX results, 1-day steps, days 0-1827', epochs: 7,
+  steps_per_epoch: 182106, optimizer: AdamW, weight_decay: 0.0001, scheduler: '200 warm-up steps, cosine
+    1e-4 -> 1e-6 (5 epochs), then 2 epochs at constant 1e-5', ema_decay: 0.999, grad_clip: 1.0, input_noise: 0.05,
+  loss: MSE of normalised well volumes at the well cells, note: 'The published recipe (configs/rate_2d_1d.yaml)
+    is the single cosine run of the paper (7 epochs, 1e-4 -> 1e-6); the shipped weights come from the
+    two-stage run above.'}

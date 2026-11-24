@@ -1,0 +1,15 @@
+# Direct dependencies of pyproject.toml, pinned to the tested versions (Python 3.12).
+# torch 2.5.1 comes from the PyTorch index (CUDA 12.4 build: --index-url https://download.pytorch.org/whl/cu124;
+# CPU only: https://download.pytorch.org/whl/cpu). See docs/00_install.md.
+numpy==2.2.2
+pandas==2.2.3
+scipy==1.15.1
+h5py==3.13.0
+xarray==2026.9.0
+tqdm==4.67.1
+torch==2.5.1
+torch_geometric==2.7.0
+matplotlib==3.10.0
+PyYAML==6.0.2
+# tests: pytest==9.2.0   (pip install -e .[dev])
+resfo==5.0.3

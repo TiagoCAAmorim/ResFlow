@@ -1,0 +1,5 @@
+mode,day,P_r2,P_shifted_r2,Sw_r2,P_mae_MPa,Sw_mae,MBe_oil_pct,MBe_water_pct,cum_oil_prod_abs_err_pct,cum_water_prod_abs_err_pct,cum_water_inj_abs_err_pct
+imposed,1000,0.993275,0.999601,,0.400017,,0.0646036,0.00235427,,,
+imposed,1825,0.983457,0.999042,,0.369099,,0.0563685,0.0258,,,
+rate,1000,0.999738,0.999983,,0.0786338,,0.227853,0.205228,7.59282,2560.01,
+rate,1825,0.99828,0.999411,,0.0994303,,0.234654,0.276897,6.47112,2625.36,

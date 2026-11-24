@@ -1,0 +1,10 @@
+numpy
+pandas
+scipy
+matplotlib
+pyyaml
+# optional, only to compare OPM / open-DARTS results with IMEX (.sr3) or OPM output:
+#   h5py
+#   resfo
+# optional, only to run the decks in open-DARTS (use a separate virtual environment, see DARTS.md):
+#   open-darts

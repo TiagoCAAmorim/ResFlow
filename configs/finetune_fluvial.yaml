@@ -1,0 +1,31 @@
+# Fine-tune a state model on the Upper Ness (fluvial) set (paper section "Fine-Tuning on a Fluvial Formation"):
+# resflow finetune --weights weights/state_2d_1d --config configs/finetune_fluvial.yaml
+# Architecture, features and the input/output normalisation come from the starting weights; the
+# optimizer starts fresh. The loss, as in the original training code, is normalised with the
+# fine-tune dataset's statistics: run `resflow fit-norm --dataset data/spe10_fluvial/datasets` first. The paper's fine-tuned weights
+# (weights/state_2d_1d_fluvial_ft) started from an earlier snapshot of the final run (step
+# 1,110,000), not from the final weights, and had no pushforward in its first epoch; this recipe uses
+# chain 4 from the start by design.
+model: state
+dataset: data/spe10_fluvial/datasets  # train/ (and val/ or test/ for the validation loss)
+run_dir: runs/finetune_fluvial
+seed: 0
+loss_norm_stats: null                 # default: <dataset>/analysis/stats/lin_scaler.pt (fit-norm)
+model_batch_limit: 16
+data: {min_day: 0, max_day: 1000}
+train:
+  epochs: 2
+  steps_per_epoch: 108000              # an epoch also ends when the training files are exhausted
+  lr: 8.0e-6
+  weight_decay: 1.0e-4
+  scheduler: {factor: 0.98, patience: 5, min_lr: 1.0e-6}
+  clean_eval: {every: 2000, n_sims: 4}
+  ema_decay: 0.999
+  grad_clip: 1.0
+  block_schedule: [12, 12]
+  pushforward: {schedule: [4, 4], randomize_depth: true}   # chain up to 4 in both epochs (by design)
+  loss_idxs: [1, 5, 6, 7]
+  train_mask: {drop_frac: 0.5, seed: 42}
+  noise: {std: 0.0}
+  save_every: 2000
+  log_every: 10

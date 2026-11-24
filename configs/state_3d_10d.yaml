@@ -1,0 +1,75 @@
+# Small 3D state model, 10-day steps (32x32x5 and 60x60x5 decks): the small model of the ablations.
+# resflow fit-norm --dataset data/spe10_3d_10d/datasets
+# resflow train-state --config configs/state_3d_10d.yaml
+model: state
+dataset: data/spe10_3d_10d/datasets
+run_dir: runs/state_3d_10d
+seed: 1
+norm_stats: null
+vols2p_weights: weights/state_2d_1d/weights.pt
+model_batch_limit: 16
+data: {min_day: 0, max_day: 1000}
+physics: {g: 1.0e-4, z_mean: null}
+features: {use_beta_ig: false, use_beta_iw: true}
+well_type_embedding: {num_types: 3, dim: 4, active_eps: 1.0e-4}
+network:
+  hidden_dims: [64, 32]
+  enc_nodes_dims: [64, 64, 64]
+  enc_edges_dims: [32, 32]
+  dec_nodes_dims: [64, 64]
+  kernel_dims: [64]
+  edge_mlp_dims: [32, 32]
+  n_blocks: 12
+  conv_rank: 8
+  activation: gelu
+  decoder_concat_input: true
+  use_bn: true
+  add_inner_skip: true
+  init_type: xavier_uniform
+input_asinh:
+  # asinh(z / c) / k on the normalised heavy-tailed inputs: [c, k]
+  dNp: [1.295, 1.97]
+  dGp: [1.295, 1.97]
+  dWp: [0.2246, 2.4]
+  dWi: [0.6128, 2.16]
+  G(f_o): [0.0382, 1.885]
+  G(f_g): [0.0382, 1.885]
+  G(f_w): [0.0016, 2.888]
+  G(f_g_inj): [0.0052, 2.48]
+  G(f_w_inj): [0.0009, 3.074]
+  G(f_o>0): [0.2928, 1.601]
+  G(f_g>0): [0.2928, 1.601]
+  G(f_w>0): [0.2234, 1.546]
+  G(f_g_inj>0): [0.2163, 1.552]
+  G(f_w_inj>0): [0.2245, 1.531]
+  G(f_o<0): [0.461, 1.57]
+  G(f_g<0): [0.461, 1.57]
+  G(f_w<0): [0.2113, 1.55]
+  G(f_g_inj<0): [0.1928, 1.561]
+  G(f_w_inj<0): [0.2128, 1.533]
+  fo: [0.6378, 1.6]
+  fw: [0.1718, 1.614]
+  fg_dissolved: [0.6378, 1.6]
+  fg_g_inj: [0.1613, 1.614]
+  fg_w_inj: [0.1746, 1.597]
+  fo>0: [0.9179, 1.6]
+  fw>0: [0.2387, 1.614]
+  fg_dissolved>0: [0.9179, 1.6]
+  fg_g_inj>0: [0.225, 1.614]
+  fg_w_inj>0: [0.2427, 1.597]
+train:
+  epochs: 3
+  steps_per_epoch: 20000
+  lr: 5.0e-5
+  weight_decay: 1.0e-4
+  scheduler: {factor: 0.98, patience: 5, min_lr: 1.0e-6}
+  clean_eval: {every: 2000, n_sims: 4}
+  ema_decay: null                      # the 3D run had no weight averaging
+  grad_clip: 1.0
+  block_schedule: [8, 10, 12]
+  pushforward: {schedule: [0, 1, 2], randomize_depth: true}
+  loss_idxs: [1, 5, 6, 7]
+  train_mask: {drop_frac: 0.5, seed: 42}
+  noise: {std: 0.0}
+  save_every: 2000
+  log_every: 10

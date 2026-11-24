@@ -1,0 +1,44 @@
+# Rate model, 1-day steps (paper Table A-1: a single run of 7 epochs, cosine 1e-4 -> 1e-6).
+# resflow fit-norm --dataset data/spe10/datasets      (same statistics file as the state model)
+# resflow train-rate --config configs/rate_2d_1d.yaml
+# The shipped weights (weights/rate_2d_1d) come from a two-stage run: 5 epochs of this schedule,
+# then 2 epochs at a constant 1e-5.
+model: rate
+dataset: data/spe10/datasets
+run_dir: runs/rate_2d_1d
+seed: 0
+norm_stats: null
+data: {min_day: 0, max_day: 1827}     # all days
+physics: {g: 1.0e-4, z_mean: null}
+features: {use_beta_ig: false, use_beta_iw: true}
+well_type_embed_dim: 4
+network:
+  hidden_dims: [16, 8]
+  enc_nodes_dims: [16, 16]
+  enc_edges_dims: [8, 8]
+  dec_nodes_dims: [16, 16]
+  kernel_dims: [16]
+  edge_mlp_dims: [8]
+  n_blocks: 2
+  conv_rank: 4
+  activation: gelu
+  decoder_concat_input: false
+  use_bn: true
+  add_inner_skip: true
+  dense_layers: true
+  init_scale: 0.001                    # learnable affine input layer
+  init_type: xavier_uniform
+train:
+  epochs: 7
+  steps_per_epoch: null                # one pass over every step (182,106 on the paper's set)
+  lr: 1.0e-4
+  min_lr: 1.0e-6
+  warmup_steps: 200
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+  ema_decay: 0.999
+  noise_std: 0.05                      # x std of the one-step change, unphysical draws rejected
+  clean_every: 500
+  eval_sims: 4
+  save_every: 5000
+  log_every: 50

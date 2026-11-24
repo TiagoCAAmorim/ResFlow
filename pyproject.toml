@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resflow"
+version = "0.1.0"
+description = "ResFlow-GNN: graph neural network proxy for 2D black-oil waterflood simulation"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=2",
+    "pandas",
+    "scipy",
+    "h5py",
+    "xarray",
+    "tqdm",
+    "torch>=2.5",
+    "torch_geometric>=2.6",
+    "matplotlib",
+    "PyYAML",
+    "resfo",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+resflow = "resflow.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["resflow*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

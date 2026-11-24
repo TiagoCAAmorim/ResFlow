@@ -1,0 +1,94 @@
+format_version: 1
+model: state
+name: state_2d_1d_fluvial_ft
+description: State model fine-tuned on the Upper Ness (fluvial) 2D set, 1-day steps.
+network:
+  hidden_dims: [128, 64]
+  enc_nodes_dims: [128, 128, 128]
+  enc_edges_dims: [64, 64]
+  dec_nodes_dims: [128, 128]
+  kernel_dims: [128]
+  edge_mlp_dims: [64, 64]
+  n_blocks: 12
+  conv_rank: 8
+  activation: gelu
+  decoder_concat_input: true
+  use_bn: true
+  add_inner_skip: true
+  dense_layers: false
+  init_scale: []
+  init_type: xavier_uniform
+node_features: [P, So, Sg, Sw, Vo_std, Vg_std, Vw_std, Vo_res, Vg_free_res, Vw_res, Phi_o, Phi_g, Phi_w,
+  beta_o, beta_g, beta_w, beta_iw, G(f_o), G(f_g), G(f_w), G(f_g_inj), G(f_w_inj), G(f_o>0), G(f_g>0),
+  G(f_w>0), G(f_g_inj>0), G(f_w_inj>0), G(f_o<0), G(f_g<0), G(f_w<0), G(f_g_inj<0), G(f_w_inj<0), dNp,
+  dGp, dWp, dGi, dWi, perm_i, perm_j, perm_k, log(perm_i), log(perm_j), log(perm_k)]
+edge_features: [fo, fg_free, fw, fg_dissolved, fg_g_inj, fg_w_inj, fo>0, fg_free>0, fw>0, fg_dissolved>0,
+  fg_g_inj>0, fg_w_inj>0, delta_phi_o, delta_phi_g, delta_phi_w, Transmissibility, log(Transmissibility),
+  edge_dist, log(edge_dist), edge_dist_mod, log(edge_dist_mod)]
+normalization:
+  type: linear
+  grouped: true
+  feature_names: [Rs, P, So, Sg, Sw, Vo_std, Vg_std, Vw_std, Vo_res, Vg_free_res, Vw_res, Phi_o, Phi_g,
+    Phi_w, PorVol_ref, PorVol_res, beta_o, beta_g, beta_w, beta_ig, beta_iw, G(f_o), G(f_g), G(f_w), G(f_g_inj),
+    G(f_w_inj), G(f_o>0), G(f_g>0), G(f_w>0), G(f_g_inj>0), G(f_w_inj>0), G(f_o<0), G(f_g<0), G(f_w<0),
+    G(f_g_inj<0), G(f_w_inj<0), dNp, dGp, dWp, dGi, dWi, BHPp, BHPg, BHPw, z, por, perm_i, perm_j, perm_k,
+    log(perm_i), log(perm_j), log(perm_k), WIp, WIg, WIw, dRs, dP, dSo, dSg, dSw, dVo_std, dVg_std, dVw_std,
+    dVo_res, dVg_free_res, dVw_res, dPhi_o, dPhi_g, dPhi_w, fo, fg_free, fw, fg_dissolved, fg_g_inj, fg_w_inj,
+    fo>0, fg_free>0, fw>0, fg_dissolved>0, fg_g_inj>0, fg_w_inj>0, delta_phi_o, delta_phi_g, delta_phi_w,
+    Transmissibility, log(Transmissibility), edge_dist, log(edge_dist), edge_dist_mod, log(edge_dist_mod)]
+  state_keys: [data_norm_in., data_norm_out.]
+input_asinh:
+  dNp: [1.295, 1.97]
+  dGp: [1.295, 1.97]
+  dWp: [0.2246, 2.4]
+  dWi: [0.6128, 2.16]
+  G(f_o): [0.0382, 1.885]
+  G(f_g): [0.0382, 1.885]
+  G(f_w): [0.0016, 2.888]
+  G(f_g_inj): [0.0052, 2.48]
+  G(f_w_inj): [0.0009, 3.074]
+  G(f_o>0): [0.2928, 1.601]
+  G(f_g>0): [0.2928, 1.601]
+  G(f_w>0): [0.2234, 1.546]
+  G(f_g_inj>0): [0.2163, 1.552]
+  G(f_w_inj>0): [0.2245, 1.531]
+  G(f_o<0): [0.461, 1.57]
+  G(f_g<0): [0.461, 1.57]
+  G(f_w<0): [0.2113, 1.55]
+  G(f_g_inj<0): [0.1928, 1.561]
+  G(f_w_inj<0): [0.2128, 1.533]
+  fo: [0.6378, 1.6]
+  fw: [0.1718, 1.614]
+  fg_dissolved: [0.6378, 1.6]
+  fg_g_inj: [0.1613, 1.614]
+  fg_w_inj: [0.1746, 1.597]
+  fo>0: [0.9179, 1.6]
+  fw>0: [0.2387, 1.614]
+  fg_dissolved>0: [0.9179, 1.6]
+  fg_g_inj>0: [0.225, 1.614]
+  fg_w_inj>0: [0.2427, 1.597]
+well_type_embedding: {num_types: 3, dim: 4, active_eps: 0.0001}
+outputs: [dVo_std, dVg_std, dVw_std]
+physics:
+  g: 0.0001
+  z_mean: null
+  pvt_krel: transform.pvt.*, transform.krel.* in weights.pt
+  vols2p: {arch: moe, num_experts: 3, inputs: 'vo, vg, vw per reference pore volume', output: 'pressure
+      (kgf/cm2), initial guess of 5 Ridder iterations', weights: transform.vols2p_nn.*}
+model_batch_limit: 16
+step_size: 1.0
+units: {pressure: kgf/cm2 (1 kgf/cm2 = 0.0980665 MPa), rs: sm3/sm3, saturation: fraction, volume: 'm3
+    at standard conditions, per cell (well volumes: per step)', pore_volume: m3, depth: m, time: days,
+  transmissibility_and_well_index: 'IMEX MODSI units, as read from the .sr3/.out files'}
+training:
+  data: Upper Ness fluvial 2D training decks (32x32), IMEX results, 1-day steps, days 0-1000
+  start: snapshot of the final state model at step 1,110,000 of its training
+  epochs: 2
+  steps_per_epoch: 108000
+  optimizer: AdamW (fresh)
+  lr: 8.0e-06
+  block_curriculum: [12, 12]
+  pushforward_chain: [0, 4]
+  ema_decay: 0.999
+  note: pushforward off in epoch 1 (warm-up epoch of the original trainer), chains up to 4 in epoch 2
+  normalization: kept from the Tarbert model (frozen)

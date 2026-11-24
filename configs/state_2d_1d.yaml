@@ -1,0 +1,77 @@
+# Final 2D state model, 1-day steps (paper Section 3.9, Table A-1).
+# resflow fit-norm --dataset data/spe10/datasets      (once, before a training from scratch)
+# resflow train-state --config configs/state_2d_1d.yaml [--set dataset=... run_dir=...]
+# Differs from the shipped weights only by the loss: they were also trained with a mass-balance
+# term and a bias term (weights 0.1 and 0.1) that this recipe, like the paper, does not use.
+model: state
+dataset: data/spe10/datasets          # root with train/ and val/ (output of resflow build)
+run_dir: runs/state_2d_1d
+seed: 0
+norm_stats: null                      # default: <dataset>/analysis/stats/lin_scaler.pt (fit-norm)
+vols2p_weights: weights/state_2d_1d/weights.pt   # pretrained pressure estimator (frozen)
+model_batch_limit: 16                 # time steps per network call in the validation loss
+data: {min_day: 0, max_day: 1000}     # training samples up to day 1000
+physics: {g: 1.0e-4, z_mean: null}    # constants, never fitted
+features: {use_beta_ig: false, use_beta_iw: true}
+well_type_embedding: {num_types: 3, dim: 4, active_eps: 1.0e-4}
+network:
+  hidden_dims: [128, 64]
+  enc_nodes_dims: [128, 128, 128]
+  enc_edges_dims: [64, 64]
+  dec_nodes_dims: [128, 128]
+  kernel_dims: [128]
+  edge_mlp_dims: [64, 64]
+  n_blocks: 12
+  conv_rank: 8
+  activation: gelu
+  decoder_concat_input: true
+  use_bn: true                        # LayerNorm after each block (post)
+  add_inner_skip: true
+  init_type: xavier_uniform
+input_asinh:
+  # asinh(z / c) / k on the normalised heavy-tailed inputs: [c, k]
+  dNp: [1.295, 1.97]
+  dGp: [1.295, 1.97]
+  dWp: [0.2246, 2.4]
+  dWi: [0.6128, 2.16]
+  G(f_o): [0.0382, 1.885]
+  G(f_g): [0.0382, 1.885]
+  G(f_w): [0.0016, 2.888]
+  G(f_g_inj): [0.0052, 2.48]
+  G(f_w_inj): [0.0009, 3.074]
+  G(f_o>0): [0.2928, 1.601]
+  G(f_g>0): [0.2928, 1.601]
+  G(f_w>0): [0.2234, 1.546]
+  G(f_g_inj>0): [0.2163, 1.552]
+  G(f_w_inj>0): [0.2245, 1.531]
+  G(f_o<0): [0.461, 1.57]
+  G(f_g<0): [0.461, 1.57]
+  G(f_w<0): [0.2113, 1.55]
+  G(f_g_inj<0): [0.1928, 1.561]
+  G(f_w_inj<0): [0.2128, 1.533]
+  fo: [0.6378, 1.6]
+  fw: [0.1718, 1.614]
+  fg_dissolved: [0.6378, 1.6]
+  fg_g_inj: [0.1613, 1.614]
+  fg_w_inj: [0.1746, 1.597]
+  fo>0: [0.9179, 1.6]
+  fw>0: [0.2387, 1.614]
+  fg_dissolved>0: [0.9179, 1.6]
+  fg_g_inj>0: [0.225, 1.614]
+  fg_w_inj>0: [0.2427, 1.597]
+train:
+  epochs: 12
+  steps_per_epoch: 108000
+  lr: 5.0e-5
+  weight_decay: 1.0e-4
+  scheduler: {factor: 0.98, patience: 5, min_lr: 1.0e-6}   # ReduceLROnPlateau on the clean loss
+  clean_eval: {every: 2000, n_sims: 4}                     # clean one-step loss, random val sims
+  ema_decay: 0.999
+  grad_clip: 1.0
+  block_schedule: [8, 10, 12]          # active processor blocks per epoch (last value holds)
+  pushforward: {schedule: [0, 1, 2, 3, 4], randomize_depth: true}   # chain n ~ U{0..n_e}; 0 = off
+  loss_idxs: [1, 5, 6, 7]              # dP, dVo, dVg, dVw of (Rs, P, So, Sg, Sw, Vo, Vg, Vw)
+  train_mask: {drop_frac: 0.5, seed: 42}
+  noise: {std: 0.0}                    # optional input-state noise (not used in the paper)
+  save_every: 2000
+  log_every: 10
